@@ -35,3 +35,19 @@ func (m *MapStorage) Find(shortUrl string) (string, error) {
 	}
 	return value.(*model.URL).LongURL, nil
 }
+
+func (m *MapStorage) Flush(period time.Duration) {
+	t := time.NewTicker(period * time.Second)
+	defer t.Stop()
+	for {
+		select {
+		case <-t.C: // Activate periodically
+			m.storage.Range(func(key, value any) bool {
+				if value.(*model.URL).ExpirationDate.Before(time.Now()) {
+					m.storage.Delete(key)
+				}
+				return true
+			})
+		}
+	}
+}

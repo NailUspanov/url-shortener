@@ -1,0 +1,31 @@
+version: '3'
+
+services:
+
+  url-shortener-service:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    restart: always
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  postgres:
+    image: 'postgres:latest'
+    container_name: postgresdb
+    ports:
+      - "5436:5432"
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: urlsdb
+    volumes:
+      - ./db-data:/var/lib/postgresql/data/
