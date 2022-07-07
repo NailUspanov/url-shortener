@@ -2,6 +2,8 @@ package service
 
 import "url-shortener/internal/storage"
 
+//go:generate mockgen -source=service.go -destination=mocks/mock.go
+
 type UrlService interface {
 	Create(longUrl string) (string, error)
 	Find(shortUrl string) (string, error)
