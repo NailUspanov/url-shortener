@@ -25,7 +25,12 @@ func TestMapStorage_Create(t *testing.T) {
 			inputLongUrl:  "http:/somelongurl.com",
 			inputShortUrl: "amw2MskMwq",
 			errorExpected: false,
-			storedData:    &model.URL{},
+			storedData: &model.URL{
+				Id:             0,
+				LongURL:        "",
+				ShortURL:       "",
+				ExpirationDate: time.Time{},
+			},
 		},
 		{
 			name:          "collision",
@@ -36,7 +41,7 @@ func TestMapStorage_Create(t *testing.T) {
 				Id:             0,
 				LongURL:        "http:/website.com",
 				ShortURL:       "amw2MskMwq",
-				ExpirationDate: time.Time{},
+				ExpirationDate: time.Now().AddDate(0, 0, 1),
 			},
 			expected: "amw2MskMwq",
 		},
@@ -48,7 +53,7 @@ func TestMapStorage_Create(t *testing.T) {
 			storage := NewMapStorage(syncmap)
 			created, err := storage.Create(test.inputShortUrl, test.inputLongUrl)
 			if test.errorExpected {
-				asserts.NotEqual(test.expected, created)
+				asserts.Equal(test.expected, created)
 			} else {
 				asserts.NoError(err)
 			}
@@ -74,7 +79,7 @@ func TestMapStorage_Find(t *testing.T) {
 				Id:             0,
 				LongURL:        "http:/somelongurl.com",
 				ShortURL:       "amw2MskMwq",
-				ExpirationDate: time.Time{},
+				ExpirationDate: time.Now().AddDate(0, 0, 1),
 			},
 		},
 		{
@@ -89,6 +94,18 @@ func TestMapStorage_Find(t *testing.T) {
 			},
 			err: errors.New("error occurred during find operation in map storage"),
 		},
+		{
+			name:          "Link has expired",
+			inputShortUrl: "amw2MskMwq",
+			errorExpected: true,
+			storedData: &model.URL{
+				Id:             0,
+				LongURL:        "http:/somelongurl.com",
+				ShortURL:       "amw2MskMwq",
+				ExpirationDate: time.Now(),
+			},
+			err: errors.New("the link has expired"),
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -96,6 +113,7 @@ func TestMapStorage_Find(t *testing.T) {
 			syncmap.Store(test.storedData.ShortURL, test.storedData)
 			storage := NewMapStorage(syncmap)
 
+			time.Sleep(100 * time.Millisecond)
 			v, err := storage.Find(test.inputShortUrl)
 			if test.errorExpected {
 				asserts.Equal(test.err, err)

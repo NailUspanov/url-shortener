@@ -4,7 +4,6 @@ import (
 	"errors"
 	"sync"
 	"time"
-	"url-shortener/internal/helpers"
 	"url-shortener/internal/model"
 )
 
@@ -22,11 +21,9 @@ func (m *MapStorage) Create(shortUrl, longUrl string) (string, error) {
 		ShortURL:       shortUrl,
 		ExpirationDate: time.Now().AddDate(0, 0, 1),
 	}
-	_, loaded := m.storage.LoadOrStore(shortUrl, &url)
-	_ = loaded
-	for loaded {
-		url.ShortURL = helpers.Encode(10)
-		_, loaded = m.storage.LoadOrStore(url.ShortURL, &url)
+	val, loaded := m.storage.LoadOrStore(shortUrl, &url)
+	if loaded {
+		val.(*model.URL).ExpirationDate = url.ExpirationDate
 	}
 	return url.ShortURL, nil
 }
@@ -36,6 +33,11 @@ func (m *MapStorage) Find(shortUrl string) (string, error) {
 	if !ok {
 		return "", errors.New("error occurred during find operation in map storage")
 	}
+
+	if value.(*model.URL).ExpirationDate.Before(time.Now()) {
+		return "", errors.New("the link has expired")
+	}
+
 	return value.(*model.URL).LongURL, nil
 }
 
