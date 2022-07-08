@@ -25,7 +25,7 @@ docker-compose up --build -d
 
 
 ### SCHEMA
-```postgresql
+```sql
 CREATE TABLE public.urls
 (
     id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 ),
