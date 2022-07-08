@@ -15,7 +15,11 @@ func NewURL(storage storage.URLStorage) *URL {
 
 func (u *URL) Create(longUrl string) (string, error) {
 	shortUrl := helpers.Encode(10)
-	return shortUrl, u.storage.Create(shortUrl, longUrl)
+	shortUrl, err := u.storage.Create(shortUrl, longUrl)
+	if err != nil {
+		return "", err
+	}
+	return shortUrl, err
 }
 
 func (u *URL) Find(shortUrl string) (string, error) {

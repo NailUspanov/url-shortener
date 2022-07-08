@@ -5,7 +5,7 @@ import (
 )
 
 type URLStorage interface {
-	Create(shortUrl, longUrl string) error
+	Create(shortUrl, longUrl string) (string, error)
 	Find(shortUrl string) (string, error)
 	Flush(period time.Duration)
 }

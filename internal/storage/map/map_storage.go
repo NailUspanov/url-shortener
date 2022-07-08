@@ -4,6 +4,7 @@ import (
 	"errors"
 	"sync"
 	"time"
+	"url-shortener/internal/helpers"
 	"url-shortener/internal/model"
 )
 
@@ -15,17 +16,19 @@ func NewMapStorage(storage *sync.Map) *MapStorage {
 	return &MapStorage{storage: storage}
 }
 
-func (m *MapStorage) Create(shortUrl, longUrl string) error {
+func (m *MapStorage) Create(shortUrl, longUrl string) (string, error) {
 	url := model.URL{
 		LongURL:        longUrl,
 		ShortURL:       shortUrl,
 		ExpirationDate: time.Now().AddDate(0, 0, 1),
 	}
 	_, loaded := m.storage.LoadOrStore(shortUrl, &url)
-	if loaded {
-		return errors.New("error occurred during create operation in map storage")
+	_ = loaded
+	for loaded {
+		url.ShortURL = helpers.Encode(10)
+		_, loaded = m.storage.LoadOrStore(url.ShortURL, &url)
 	}
-	return nil
+	return url.ShortURL, nil
 }
 
 func (m *MapStorage) Find(shortUrl string) (string, error) {

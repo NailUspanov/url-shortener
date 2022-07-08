@@ -50,7 +50,7 @@ func (h *Handler) find(c *gin.Context) {
 		return
 	}
 
-	if !regexp.MustCompile(`^[a-zA-Z\d]{10}$`).MatchString(input.ShortUrl) {
+	if !regexp.MustCompile(`^\w{10}$`).MatchString(input.ShortUrl) {
 		helpers.NewErrorResponse(c, http.StatusBadRequest, "invalid input type")
 		return
 	}
