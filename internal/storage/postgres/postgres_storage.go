@@ -22,9 +22,9 @@ func NewStoragePostgres(db *sqlx.DB) *StoragePostgres {
 func (s *StoragePostgres) Create(shortUrl, longUrl string) (string, error) {
 
 	timeNow := now().AddDate(0, 0, 1)
-
+	logrus.Println(shortUrl)
 	createUrlQuery := fmt.Sprintf("INSERT INTO %s (long_url, short_url, expiration_date) VALUES ($1, $2, $3)"+
-		" ON CONFLICT (short_url) DO UPDATE SET expiration_date = $4", urlsTable)
+		" ON CONFLICT (long_url) DO UPDATE SET expiration_date = $4", urlsTable)
 	_, err := s.db.Exec(createUrlQuery, longUrl, shortUrl, timeNow, timeNow)
 
 	if err != nil {
