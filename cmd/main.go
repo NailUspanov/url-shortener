@@ -40,16 +40,13 @@ func main() {
 		logrus.Println("Map storage started")
 	}
 
-	//прокидываю инстанс бд и создаю репозитории
 	storages := storage.NewStorage(urlStorage)
-	//прокидываю репозитории в сервисы
 	services := service.NewService(storages)
-	//сервисы в хендлеры
 	handler := handlers.NewHandler(services)
 
+	// каждые 24 часа запускается очистка неактивных ссылок
 	go storages.URLStorage.Flush(86400) // 1 day
 
-	//запускаю сервер на порту 8000
 	srv := new(Server)
 	if err := srv.Run(os.Getenv("PORT"), handler.InitRoutes()); err != nil {
 		logrus.Fatalf("error occured while runnning http server: %s", err.Error())
